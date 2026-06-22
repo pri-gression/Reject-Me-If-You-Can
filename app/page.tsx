@@ -91,7 +91,7 @@ export default function App(){
               <textarea className = "bg-rose-50 text-black rounded-3xl w-100 h-50 font-semibold w-50 shadow-2xl focus:ring-2 focus:ring-orange-300 focus:outline-none"
               value = {message} 
               onChange = {(e) => setMessage(e.target.value)} 
-              placeholder = "   Hi Pritika...Lets give you a shot (Pretty Please 😸)"
+              placeholder = "   Hi Pritika...Lets give you a shot (Pretty Please ? 😸)"
               />
 
               <button onClick = {() => {sendMessage(); confetti();}}
