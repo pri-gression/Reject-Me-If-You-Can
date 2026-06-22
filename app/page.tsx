@@ -6,7 +6,7 @@ import confetti from "canvas-confetti";
 
 export default function App(){
     
-    const [position, setPosition] = useState(null);
+    const [position, setPosition] = useState < {x: number, y:number} | null>(null);
 
     const [showForm, setShowForm] = useState(false); 
     const [message, setMessage] = useState("");
@@ -15,7 +15,7 @@ export default function App(){
 
     const [status, setStatus] = useState("idle")
 
-    const [obstacle, setObstacle] = useState(null); 
+    const [obstacle, setObstacle] = useState < string | null > (null); 
  
     function rejectMe(){
 
