@@ -2,7 +2,7 @@
 
 import {useRef, useEffect} from "react";
 import * as poseDetection from '@tensorflow-models/pose-detection'; // Importing the model 
-import "@tensorflow/tfjs";
+import * as tf from "@tensorflow/tfjs";
 
 export default function SquatGate() {
     
@@ -22,9 +22,13 @@ export default function SquatGate() {
             console.log("pose:", pose)
 
             canvas.width = video.videoWidth; // cover the video with the canvas, same size 
+            console.log("canvas width: ", canvas.width)
             canvas.height = video.videoHeight;
+            console.log("canvas height: ", canvas.height)
+
 
             const ctx = canvas.getContext("2d"); 
+            console.log("ctx", ctx)
 
             if (ctx && pose.length > 0){
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -62,6 +66,8 @@ export default function SquatGate() {
 
     useEffect(() => {
         async function loadModel(){
+            await tf.setBackend("webgl");
+            await tf.ready();
             const detector = await poseDetection.createDetector(
                 poseDetection.SupportedModels.MoveNet,
                 { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING}
