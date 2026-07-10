@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
 import { useState } from "react";
 import confetti from "canvas-confetti";
 
 export default function App(){
-    
+
+    // Position variables for reject me button 
     const [position, setPosition] = useState < {x: number, y:number} | null>(null);
 
     const [showForm, setShowForm] = useState(false); 
@@ -19,7 +19,7 @@ export default function App(){
  
     function rejectMe(){
 
-      const rejectArray = ["dodge", "error", "dodge", "sure", "dodge"]
+      const rejectArray = ["dodge", "error", "dodge", "sure", "dodge", "squats", "dodge"]
 
       const random = rejectArray[Math.floor(Math.random() * rejectArray.length)]
 
