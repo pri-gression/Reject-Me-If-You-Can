@@ -16,10 +16,10 @@ export default function SquatGate() {
         const canvas = canvasRef.current;
         const detector = detectorRef.current;
 
-        if (video && detector && video.videoWidth > 0 && video.videoHeight) { 
+        if (video && canvas && detector && video.videoWidth > 0 && video.videoHeight) { 
 
             const pose = await detector.estimatePoses(video); // detect the 17 points 
-            console.log(pose)
+            console.log("pose:", pose)
 
             canvas.width = video.videoWidth; // cover the video with the canvas, same size 
             canvas.height = video.videoHeight;
@@ -38,39 +38,39 @@ export default function SquatGate() {
                     }
                 }
             }
-        requestAnimationFrame(detectPose); //recursive call to keep up with the live frame 
-        };
+        requestAnimationFrame(detectPose); // scheduled loop for detect pose 
+    };
 
-        useEffect(() => { // use effect to start the camera feed into video
-            let stream; 
+    useEffect(() => { // use effect to start the camera feed into video
+        let stream; 
 
-            async function startCamera() {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true })
+        async function startCamera() {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true })
 
-                if (video){
-                    video.srcObject = stream 
-                    video.play()       
-                }
+            if (videoRef.current){
+                videoRef.current.srcObject = stream 
+                videoRef.current.play()       
             }
+        }
 
-            startCamera();
+        startCamera();
 
-            return () => {
-                stream?.getTracks().forEach((track) => track.stop());
-            };
-        }, []); 
+        return () => {
+            stream?.getTracks().forEach((track) => track.stop());
+        };
+    }, []); 
 
-        useEffect(() => {
-            async function loadModel(){
-                const detector = await poseDetection.createDetector(
-                    poseDetection.SupportedModels.MoveNet,
-                    { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING}
-                );
-                detectorRef.current = detector;
-                detectPose();
-            } 
-            loadModel();             
-        }, []); 
+    useEffect(() => {
+        async function loadModel(){
+            const detector = await poseDetection.createDetector(
+                poseDetection.SupportedModels.MoveNet,
+                { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING}
+            );
+            detectorRef.current = detector;
+            detectPose();
+        } 
+        loadModel();             
+    }, []); 
 
     return (
         <div>
