@@ -19,16 +19,11 @@ export default function SquatGate() {
         if (video && canvas && detector && video.videoWidth > 0 && video.videoHeight) { 
 
             const pose = await detector.estimatePoses(video); // detect the 17 points 
-            console.log("pose:", pose)
 
             canvas.width = video.videoWidth; // cover the video with the canvas, same size 
-            console.log("canvas width: ", canvas.width)
             canvas.height = video.videoHeight;
-            console.log("canvas height: ", canvas.height)
-
 
             const ctx = canvas.getContext("2d"); 
-            console.log("ctx", ctx)
 
             if (ctx && pose.length > 0){
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -41,9 +36,64 @@ export default function SquatGate() {
                         }
                     }
                 }
+            
+            const pairs = poseDetection.util.getAdjacentPairs(poseDetection.SupportedModels.MoveNet); 
+            
+            if (ctx && pose.length > 0) { // A check to avoid the crash if the person is moving out of the frame 
+                for (const [i,j] of pairs){
+                    const kp1 = pose[0].keypoints[i];
+                    const kp2 = pose[0].keypoints[j]; 
+                    if (kp1.score > 0.3 && kp2.score > 0.3){
+                        ctx.beginPath();
+                        ctx.moveTo(kp1.x, kp1.y);
+                        ctx.lineTo(kp2.x, kp2.y);
+                        ctx.strokeStyle = "lime";
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                    }
+                }
             }
+
+            if (ctx && pose.length > 0) { 
+                const leftHip   = pose[0].keypoints[11];
+                const leftKnee  = pose[0].keypoints[13];
+                const leftAnkle = pose[0].keypoints[15];
+                const rightHip   = pose[0].keypoints[12];
+                const rightKnee  = pose[0].keypoints[14];
+                const rightAnkle = pose[0].keypoints[16];
+
+                if (leftHip.score > 0.3 && leftKnee.score > 0.3 && leftAnkle.score > 0.3) {
+
+                    const leftAngle = calculateAngle(pose[0].keypoints[11], pose[0].keypoints[13],pose[0].keypoints[15]);
+                    console.log("LA: ", leftAngle)
+                }
+
+                if (rightHip.score > 0.3 && rightKnee.score > 0.3 && rightAnkle.score > 0.3) {
+
+                    const rightAngle = calculateAngle(pose[0].keypoints[12],pose[0].keypoints[14],pose[0].keypoints[16]); 
+                    console.log("RA: ", rightAngle)
+                }
+            }
+        }
+
         requestAnimationFrame(detectPose); // scheduled loop for detect pose 
     };
+
+    // Calculate angle between line segments/keypoints 
+
+    const calculateAngle = (firstPoint: poseDetection.Keypoint, vertex:poseDetection.Keypoint , secondPoint:poseDetection.Keypoint): number => {
+            // Hip to Knee 
+            const angle1 = Math.atan2(vertex.y - firstPoint.y, vertex.x - firstPoint.x);
+            // Knee to Angle 
+            const angle2 = Math.atan2(vertex.y - secondPoint.y, vertex.x - secondPoint.x);
+
+            let diff = Math.abs((angle2 - angle1) * (180 / Math.PI)); 
+
+            // Normalise between 0 to 360 
+            if (diff > 180) diff = 360 - diff
+
+            return diff
+        }
 
     useEffect(() => { // use effect to start the camera feed into video
         let stream; 
