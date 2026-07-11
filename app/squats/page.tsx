@@ -62,20 +62,31 @@ export default function SquatGate() {
                 const rightKnee  = pose[0].keypoints[14];
                 const rightAnkle = pose[0].keypoints[16];
 
+                let leftAngle = null;
+                let rightAngle = null; 
+                
                 if (leftHip.score > 0.3 && leftKnee.score > 0.3 && leftAnkle.score > 0.3) {
 
-                    const leftAngle = calculateAngle(pose[0].keypoints[11], pose[0].keypoints[13],pose[0].keypoints[15]);
+                    leftAngle = calculateAngle(pose[0].keypoints[11], pose[0].keypoints[13],pose[0].keypoints[15]);
                     console.log("LA: ", leftAngle)
                 }
 
                 if (rightHip.score > 0.3 && rightKnee.score > 0.3 && rightAnkle.score > 0.3) {
 
-                    const rightAngle = calculateAngle(pose[0].keypoints[12],pose[0].keypoints[14],pose[0].keypoints[16]); 
+                    rightAngle = calculateAngle(pose[0].keypoints[12],pose[0].keypoints[14],pose[0].keypoints[16]); 
                     console.log("RA: ", rightAngle)
+                }
+
+                if (leftAngle != null && rightAngle != null) { 
+                    if (leftAngle >= 170 && rightAngle >=170) {
+                        console.log ("Standing")
+                    }
+                    else if (leftAngle <= 110 && rightAngle <=110) {
+                        console.log ("Squatting")
+                    }
                 }
             }
         }
-
         requestAnimationFrame(detectPose); // scheduled loop for detect pose 
     };
 
