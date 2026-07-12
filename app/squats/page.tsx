@@ -71,12 +71,12 @@ export default function SquatGate() {
                 let rightAngle = null; 
                 let position; 
                 
-                if (leftHip.score > 0.3 && leftKnee.score > 0.3 && leftAnkle.score > 0.3) {
+                if (leftHip.score && leftHip.score > 0.3 && leftKnee.score && leftKnee.score > 0.3 && leftAnkle.score && leftAnkle.score > 0.3) {
 
                     leftAngle = calculateAngle(pose[0].keypoints[11], pose[0].keypoints[13],pose[0].keypoints[15]);
                 }
 
-                if (rightHip.score > 0.3 && rightKnee.score > 0.3 && rightAnkle.score > 0.3) {
+                if (rightHip.score && rightKnee.score && rightAnkle.score && rightHip.score > 0.3 && rightKnee.score > 0.3 && rightAnkle.score > 0.3) {
 
                     rightAngle = calculateAngle(pose[0].keypoints[12],pose[0].keypoints[14],pose[0].keypoints[16]); 
                 }
