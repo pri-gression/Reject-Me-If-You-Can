@@ -118,7 +118,7 @@ export default function SquatGate() {
         }
 
     useEffect(() => { // use effect to start the camera feed into video
-        let stream; 
+        let stream: MediaStream | null = null;; 
 
         async function startCamera() {
             stream = await navigator.mediaDevices.getUserMedia({ video: true })
