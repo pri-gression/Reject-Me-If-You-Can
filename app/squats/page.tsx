@@ -1,14 +1,19 @@
 "use client";
 
-import {useRef, useEffect} from "react";
+import {useRef, useEffect, useState } from "react";
 import * as poseDetection from '@tensorflow-models/pose-detection'; // Importing the model 
 import * as tf from "@tensorflow/tfjs";
+
+const PAIRS = poseDetection.util.getAdjacentPairs(poseDetection.SupportedModels.MoveNet);  
 
 export default function SquatGate() {
     
     const videoRef = useRef<HTMLVideoElement>(null); //video box/variable where live camera stream will be passed 
     const canvasRef = useRef<HTMLCanvasElement>(null); //a transparent drawing board, same size as the video where skeleton will be drawn
     const detectorRef = useRef<poseDetection.PoseDetector | null>(null); //it stores the pose detector box/variable where model will be loaded 
+    const frameRef = useRef<number | null>(null);
+    const [count, setCount] = useState(0);
+    const stateRef = useRef("up"); 
 
     const detectPose = async () => { //async function because it awaits poses by the model
 
@@ -36,11 +41,9 @@ export default function SquatGate() {
                         }
                     }
                 }
-            
-            const pairs = poseDetection.util.getAdjacentPairs(poseDetection.SupportedModels.MoveNet); 
-            
+                        
             if (ctx && pose.length > 0) { // A check to avoid the crash if the person is moving out of the frame 
-                for (const [i,j] of pairs){
+                for (const [i,j] of PAIRS){
                     const kp1 = pose[0].keypoints[i];
                     const kp2 = pose[0].keypoints[j]; 
                     if (kp1.score > 0.3 && kp2.score > 0.3){
@@ -64,6 +67,7 @@ export default function SquatGate() {
 
                 let leftAngle = null;
                 let rightAngle = null; 
+                let position; 
                 
                 if (leftHip.score > 0.3 && leftKnee.score > 0.3 && leftAnkle.score > 0.3) {
 
@@ -78,16 +82,25 @@ export default function SquatGate() {
                 }
 
                 if (leftAngle != null && rightAngle != null) { 
-                    if (leftAngle >= 170 && rightAngle >=170) {
+                    if ((leftAngle + rightAngle) / 2 >= 160) {
+                        position = "Standing"
                         console.log ("Standing")
+                        if (stateRef.current === "down" ){
+                            setCount(c => c + 1)
+                            stateRef.current = "up"
+                        }
                     }
-                    else if (leftAngle <= 110 && rightAngle <=110) {
+                    else if ((leftAngle + rightAngle) / 2 <= 150) {
+                        position = "Squatting"
                         console.log ("Squatting")
+                        stateRef.current = "down"
                     }
                 }
+
+
             }
         }
-        requestAnimationFrame(detectPose); // scheduled loop for detect pose 
+        frameRef.current = requestAnimationFrame(detectPose); // scheduled loop for detect pose 
     };
 
     // Calculate angle between line segments/keypoints 
@@ -136,11 +149,17 @@ export default function SquatGate() {
             detectorRef.current = detector;
             detectPose();
         } 
-        loadModel();             
+        loadModel();     
+        return () => {
+            if (frameRef.current) cancelAnimationFrame(frameRef.current); 
+        }
     }, []); 
 
     return (
         <div>
+            <div className = "bg-black text-white text-2xl fixed top-4 left-4 z-20">
+                Squats: {count}
+            </div>
             <video ref = {videoRef} className = "fixed inset-0 w-full h-full object-cover" autoPlay muted playsInline/>
             <canvas ref = {canvasRef} className = "fixed inset-0 w-full h-full object-cover z-10"/>
         </div>
