@@ -3,6 +3,7 @@
 import {useRef, useEffect, useState } from "react";
 import * as poseDetection from '@tensorflow-models/pose-detection'; // Importing the model 
 import * as tf from "@tensorflow/tfjs";
+import { useRouter } from 'next/navigation';
 
 const PAIRS = poseDetection.util.getAdjacentPairs(poseDetection.SupportedModels.MoveNet);  
 
@@ -13,7 +14,8 @@ export default function SquatGate() {
     const detectorRef = useRef<poseDetection.PoseDetector | null>(null); //it stores the pose detector box/variable where model will be loaded 
     const frameRef = useRef<number | null>(null);
     const [count, setCount] = useState(0);
-    const stateRef = useRef("up"); 
+    const stateRef = useRef("up");
+    const router = useRouter();
 
     const detectPose = async () => { //async function because it awaits poses by the model
 
@@ -72,19 +74,16 @@ export default function SquatGate() {
                 if (leftHip.score > 0.3 && leftKnee.score > 0.3 && leftAnkle.score > 0.3) {
 
                     leftAngle = calculateAngle(pose[0].keypoints[11], pose[0].keypoints[13],pose[0].keypoints[15]);
-                    console.log("LA: ", leftAngle)
                 }
 
                 if (rightHip.score > 0.3 && rightKnee.score > 0.3 && rightAnkle.score > 0.3) {
 
                     rightAngle = calculateAngle(pose[0].keypoints[12],pose[0].keypoints[14],pose[0].keypoints[16]); 
-                    console.log("RA: ", rightAngle)
                 }
 
                 if (leftAngle != null && rightAngle != null) { 
                     if ((leftAngle + rightAngle) / 2 >= 160) {
                         position = "Standing"
-                        console.log ("Standing")
                         if (stateRef.current === "down" ){
                             setCount(c => c + 1)
                             stateRef.current = "up"
@@ -92,7 +91,6 @@ export default function SquatGate() {
                     }
                     else if ((leftAngle + rightAngle) / 2 <= 150) {
                         position = "Squatting"
-                        console.log ("Squatting")
                         stateRef.current = "down"
                     }
                 }
@@ -155,10 +153,27 @@ export default function SquatGate() {
         }
     }, []); 
 
+    // alert message 
+    useEffect(() => {
+        alert("You need to do atleast a 100 squats to be able to reject me! 😤")
+    }, []);
+
+    // What if 100 squats completed 
+    useEffect(() => {
+        if (count === 100){
+            alert ("Rejection Rejected")
+            router.push("/")
+        }
+    }, [count]);
+
+
     return (
         <div>
             <div className = "bg-black text-white text-2xl fixed top-4 left-4 z-20">
                 Squats: {count}
+            </div>
+            <div className = "fixed top-4 right-4 z-25">
+                <button className = "bg-linear-to-b from-yellow-600 to-yellow-400 text-black text-2xl w-40 rounded-xl" onClick = {() => router.push("/?hire=open")}> I give up :) </button>
             </div>
             <video ref = {videoRef} className = "fixed inset-0 w-full h-full object-cover" autoPlay muted playsInline/>
             <canvas ref = {canvasRef} className = "fixed inset-0 w-full h-full object-cover z-10"/>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
+import { useRouter } from 'next/navigation';
 
 export default function App(){
 
@@ -16,6 +17,8 @@ export default function App(){
     const [status, setStatus] = useState("idle")
 
     const [obstacle, setObstacle] = useState < string | null > (null); 
+
+    const router = useRouter(); 
  
     function rejectMe(){
 
@@ -35,6 +38,9 @@ export default function App(){
       }
       else if (random == "sure"){
         setObstacle("sure");
+      }
+      else if (random == "squats"){
+        router.push("/squats")
       }
     }
 
@@ -62,6 +68,13 @@ export default function App(){
         setStatus("error")
       }
     }
+
+    useEffect( () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("hire") === "open"){
+        setShowForm(true);
+      }
+    }, []);
 
     return (
       <div > 
